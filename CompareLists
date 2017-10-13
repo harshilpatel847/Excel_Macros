@@ -1,0 +1,61 @@
+Sub CompareCosts()
+'Cross reference two lists from two different workbooks
+'Harshil Patel
+'October 12, 2017
+
+'Declare and set the two open workbooks
+Dim a As Workbook: Set a = ActiveWorkbook
+Dim b As Workbook: Set b = Workbooks.Item(2)
+Dim x As Worksheet: Set x = Sheets("Sheet1")
+
+'Declare all the other things
+Dim aLastRow As Long
+Dim bLastRow As Long
+Dim aLastCol As Long
+Dim bLastCol As Long
+Dim aLookup As Range
+Dim aMatch As Range
+Dim bLookup As Range
+Dim bMatch As Range
+Dim firstCheck As Variant
+Dim getRow As Variant
+Dim secondCheck As Variant
+
+'Set the value of those other things
+aLastRow = a.ActiveSheet.Range("B" & Rows.Count).End(xlUp).Row - 1
+bLastRow = b.ActiveSheet.Range("B" & Rows.Count).End(xlUp).Row - 1
+aLastCol = a.ActiveSheet.Cells(1, Columns.Count).End(xlToLeft).Column
+bLastCol = b.ActiveSheet.Cells(1, Columns.Count).End(xlToLeft).Column
+
+'Define ranges
+b.Activate
+Set bLookup = b.ActiveSheet.Range(Cells(2, 1), Cells(bLastRow, bLastCol))
+Set bMatch = b.ActiveSheet.Range(Cells(bLastCol, 2), Cells(bLastCol, bLastRow - 1))
+a.Activate
+Set aLookup = a.ActiveSheet.Range(Cells(2, 1), Cells(aLastRow, aLastCol))
+Set aMatch = a.ActiveSheet.Range(Cells(aLastCol, 2), Cells(aLastCol, aLastRow - 1))
+
+'Go through each line in the first workbook and
+'compare to second workbook to find differences
+For i = 2 To aLastRow
+    firstCheck = Application.VLookup(x.Cells(i, 1), bLookup, 2, False)
+    If IsError(firstCheck) Then
+        Cells(i, 3).Value = Cells(i, 2).Value
+    Else
+        'If MsgBox(i, vbOKCancel) = vbCancel Then Exit Sub
+        getRow = Application.Match(x.Cells(i, 1).Value, bMatch, 0)
+        If IsError(getRow) Then
+            'MsgBox (i)
+        Else
+            If x.Cells(i, 2).Value = b.ActiveSheet.Cells(getRow, 2).Value Then
+                'Do nothing
+            Else
+                Cells(i, 3).Value = Cells(i, 2).Value
+            End If
+        End If
+    End If
+Next i
+
+a.ActiveSheet.Range("D1").Value = "=SUM(C:C)"
+
+End Sub
